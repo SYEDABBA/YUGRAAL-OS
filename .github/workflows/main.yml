@@ -1,21 +1,41 @@
-name: Build YUGRAAL APK
+name: YUGRAAL FINAL APK BUILD
 on: [push, workflow_dispatch]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: Install Tools
+
+      - name: Install System Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld
+          sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld openjdk-17-jdk autoconf automake libtool
           pip install --upgrade pip buildozer cython
-          echo "/home/runner/.local/bin" >> $GITHUB_PATH
-      - name: Build APK
+
+      - name: Auto-Generate Spec and Build APK
         run: |
-          if [ ! -f buildozer.spec ]; then buildozer init; fi
-          buildozer -v android debug
+          # 1. Path set karo taaki buildozer mil jaye
+          export PATH=$PATH:/home/runner/.local/bin
+          
+          # 2. Nayi spec file create karo (Saari tension khatam)
+          buildozer init
+          sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
+          sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
+          sed -i 's/requirements = python3,kivy/requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3/' buildozer.spec
+          sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
+          sed -i 's/#android.permissions = INTERNET/android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE/' buildozer.spec
+          
+          # 3. APK Cooking shuru (Auto-accept licenses)
+          yes | buildozer -v android debug
+
+      - name: Upload APK Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: YUGRAAL-Install-Me
+          path: bin/*.apk
