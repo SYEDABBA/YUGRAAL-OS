@@ -4,13 +4,8 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      PYTHONUNBUFFERED: "1"
     steps:
       - uses: actions/checkout@v4
-
-      - name: Free Space
-        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -24,58 +19,20 @@ jobs:
           pip install --upgrade pip buildozer cython==0.29.33
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Build APK (The Final Victory)
+      - name: Build APK
         run: |
           export PATH=$PATH:/home/runner/.local/bin
           rm -f buildozer.spec
           buildozer init
-          
-          # Stable configuration
           sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
           sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
           sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,groq/' buildozer.spec
           sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
-          
-          # Force log updates to prevent 'Broken Pipe'
-          yes | buildozer -v android debug | stdbuf -oL tr '\r' '\n'
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: YUGRAAL-Final
-          path: bin/*.apk
-      - name: Upload Final APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: YUGRAAL-Final-App
-          # Ye path bilkul yahi hona chahiye:
-          path: ./.buildozer/android/platform/build-android-arm64-v8a/dists/yugraal/bin/*.apk
-      - name: Upload Final APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: YUGRAAL-Final-App
-          # Ye path har galti ko sudhaar dega:
-          path: bin/*.apk
-      - name: Build APK (The Final Victory)
-        run: |
-          export PATH=$PATH:/home/runner/.local/bin
-          rm -f buildozer.spec
-          buildozer init
-          
-          sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
-          sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
-          sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,groq/' buildozer.spec
-          sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
-          
-          # Build shuru karo
           yes | buildozer -v android debug
-          
-          # APK ko dhoond kar main jagah par copy karo
-          mkdir -p output_apk
-          find . -name "*.apk" -exec cp {} ./output_apk/ \;
 
-      - name: Upload APK
+      - name: Upload APK (The Fail-Safe)
         uses: actions/upload-artifact@v4
         with:
           name: YUGRAAL-Final-App
-          path: output_apk/*.apk
+          # Ye path Buildozer ka official default hai:
+          path: bin/*.apk
