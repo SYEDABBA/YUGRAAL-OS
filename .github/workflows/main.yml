@@ -7,37 +7,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Increase Memory (Anti-Broken Pipe)
+        run: |
+          sudo swapoff -a
+          sudo dd if=/dev/zero of=/swapfile bs=1G count=4
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install Tools
+      - name: Install Critical Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld openjdk-17-jdk autoconf automake libtool
           pip install --upgrade pip buildozer cython==0.29.33
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Build APK
+      - name: Build APK (Force Mode)
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          # Purani kachra file mitao
           rm -f buildozer.spec
           buildozer init
           
-          # Stable Config
+          # Stable configuration
           sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
           sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
           sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,groq/' buildozer.spec
           sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
           
-          # Build with detailed logs
-          yes | buildozer -v android debug
+          # Force logs to stay alive
+          yes | buildozer -v android debug | stdbuf -oL tr '\r' '\n'
 
       - name: Upload Final APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: YUGRAAL-Final-App
+          name: YUGRAAL-Final
           path: bin/*.apk
