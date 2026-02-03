@@ -1,4 +1,4 @@
-name: YUGRAAL FINAL APK
+name: YUGRAAL FINAL STRIKE
 on: [push, workflow_dispatch]
 
 jobs:
@@ -7,35 +7,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install System Tools
+      - name: Install Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld openjdk-17-jdk autoconf automake libtool
           pip install --upgrade pip buildozer cython==0.29.33
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Build APK (The Error Killer)
+      - name: Build APK (Victory Mode)
         run: |
           export PATH=$PATH:/home/runner/.local/bin
           rm -f buildozer.spec
           buildozer init
           
-          # Indentation aur quotes ka poora dhyan rakha hai is baar
+          # Simple and Clean config to avoid errors
           sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
           sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
-          sed -i 's|requirements = python3,kivy|requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3|' buildozer.spec
+          # Basic requirements first to ensure success
+          sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,groq/' buildozer.spec
           sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
           
-          # Licenses accept karke seedha build
           yes | buildozer -v android debug
 
-      - name: Upload YUGRAAL APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: YUGRAAL-Final-App
+          name: YUGRAAL-APK
           path: bin/*.apk
