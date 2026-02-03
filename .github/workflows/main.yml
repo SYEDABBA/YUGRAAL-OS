@@ -48,3 +48,11 @@ jobs:
         with:
           name: YUGRAAL-Final
           path: bin/*.apk
+      - name: Upload Final APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: YUGRAAL-Final-App
+          # Ye command har jagah search karegi
+          path: "**/*.apk"
+          # Agar file na mile toh build fail na ho
+          if-no-files-found: warn
