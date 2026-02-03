@@ -1,35 +1,36 @@
-name: YUGRAAL ULTIMATE BUILD
+name: YUGRAAL FINAL BOSS BATTLE
 on: [push, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build with Buildozer
-        uses: ArtemSerebrennkov/buildozer-action@v1
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          buildozer_version: stable
-          python_version: '3.10'
-          # Ye command build shuru hone se pehle purani spec mita degi
-          command: |
-            rm -f buildozer.spec
-            buildozer init
-            sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
-            sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
-            sed -i 's/requirements = python3,kivy/requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3/' buildozer.spec
-            sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
-            yes | buildozer -v android debug
+          python-version: '3.10'
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: YUGRAAL-Final-APK
-          path: bin/*.apk
+      - name: Install Critical Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld openjdk-17-jdk autoconf automake libtool
+          pip install --upgrade pip buildozer cython==0.29.33
+          echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Upload Final APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: YUGRAAL-Final
-          path: bin/*.apk
+      - name: Build APK (Slow & Steady Mode)
+        run: |
+          export PATH=$PATH:/home/runner/.local/bin
+          # Purani kachra file mitao
+          rm -f buildozer.spec
+          buildozer init
+          
+          # YUGRAAL Precise Config
+          sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
+          sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
+          sed -i 's/requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3/' buildozer.spec
+          sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
+          
+          # Fix for "Broken Pipe": Build ko thoda control mein rakhein
+          yes | buildozer android debug
