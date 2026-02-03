@@ -1,4 +1,4 @@
-name: YUGRAAL FINAL BUILD
+name: YUGRAAL FINAL VICTORY
 on: [push, workflow_dispatch]
 
 jobs:
@@ -19,26 +19,28 @@ jobs:
           pip install --upgrade pip buildozer cython
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Auto-Generate Spec and Build APK
+      - name: Build APK (The Final Stand)
         run: |
-          # Pehle purani spec mitao taaki conflict na ho
+          export PATH=$PATH:/home/runner/.local/bin
+          # 1. Purani files saaf karo
           rm -f buildozer.spec
           
-          # Nayi fresh spec banao
+          # 2. Fresh initialization
           buildozer init
           
-          # YUGRAAL ki settings set karo
+          # 3. Precise configuration
           sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
           sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
           sed -i 's/requirements = python3,kivy/requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3/' buildozer.spec
           sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
           sed -i 's/#android.permissions = INTERNET/android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE/' buildozer.spec
           
-          # Final APK cooking (All licenses accepted)
+          # 4. Clean and Build (Broken Pipe fix)
+          buildozer android clean
           yes | buildozer -v android debug
 
-      - name: Upload APK Result
+      - name: Upload YUGRAAL APK
         uses: actions/upload-artifact@v4
         with:
-          name: YUGRAAL-Final-App
+          name: YUGRAAL-App
           path: bin/*.apk
