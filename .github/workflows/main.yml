@@ -1,39 +1,32 @@
-name: YUGRAAL VICTORY PUSH
+name: YUGRAAL ULTIMATE BUILD
 on: [push, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Build with Buildozer
+        uses: ArtemSerebrennkov/buildozer-action@v1
         with:
-          python-version: '3.10'
+          buildozer_version: stable
+          python_version: '3.10'
+          # Ye command build shuru hone se pehle purani spec mita degi
+          command: |
+            rm -f buildozer.spec
+            buildozer init
+            sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
+            sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
+            sed -i 's/requirements = python3,kivy/requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3/' buildozer.spec
+            sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
+            yes | buildozer -v android debug
 
-      - name: Install Tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld openjdk-17-jdk autoconf automake libtool
-          pip install --upgrade pip buildozer cython
-          echo "/home/runner/.local/bin" >> $GITHUB_PATH
-
-      - name: APK Build
-        run: |
-          export PATH=$PATH:/home/runner/.local/bin
-          # Conflict khatam karne ke liye purani spec mitao
-          rm -f buildozer.spec
-          buildozer init
-          
-          # Settings set karo
-          sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
-          sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
-          sed -i 's/requirements = python3,kivy/requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3/' buildozer.spec
-          sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
-          
-          # Seedha build, no cleaning!
-          yes | buildozer -v android debug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: YUGRAAL-Final-APK
+          path: bin/*.apk
 
       - name: Upload Final APK
         uses: actions/upload-artifact@v4
