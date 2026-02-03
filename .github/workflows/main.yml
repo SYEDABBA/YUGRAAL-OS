@@ -1,4 +1,4 @@
-name: YUGRAAL FINAL BOSS BATTLE
+name: YUGRAAL FINAL APK
 on: [push, workflow_dispatch]
 
 jobs:
@@ -12,25 +12,30 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Critical Tools
+      - name: Install System Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld openjdk-17-jdk autoconf automake libtool
           pip install --upgrade pip buildozer cython==0.29.33
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Build APK (Slow & Steady Mode)
+      - name: Build APK (The Error Killer)
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          # Purani kachra file mitao
           rm -f buildozer.spec
           buildozer init
           
-          # YUGRAAL Precise Config
+          # Indentation aur quotes ka poora dhyan rakha hai is baar
           sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
           sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
-          sed -i 's/requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3/' buildozer.spec
+          sed -i 's|requirements = python3,kivy|requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3|' buildozer.spec
           sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
           
-          # Fix for "Broken Pipe": Build ko thoda control mein rakhein
-          yes | buildozer android debug
+          # Licenses accept karke seedha build
+          yes | buildozer -v android debug
+
+      - name: Upload YUGRAAL APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: YUGRAAL-Final-App
+          path: bin/*.apk
