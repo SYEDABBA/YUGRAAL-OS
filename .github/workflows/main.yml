@@ -1,4 +1,4 @@
-name: YUGRAAL FINAL APK BUILD
+name: YUGRAAL FINAL BUILD
 on: [push, workflow_dispatch]
 
 jobs:
@@ -17,41 +17,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld openjdk-17-jdk autoconf automake libtool
           pip install --upgrade pip buildozer cython
+          echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
       - name: Auto-Generate Spec and Build APK
         run: |
-          # 1. Path set karo taaki buildozer mil jaye
-          export PATH=$PATH:/home/runner/.local/bin
+          # Pehle purani spec mitao taaki conflict na ho
+          rm -f buildozer.spec
           
-          # 2. Nayi spec file create karo (Saari tension khatam)
+          # Nayi fresh spec banao
           buildozer init
+          
+          # YUGRAAL ki settings set karo
           sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
           sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
           sed -i 's/requirements = python3,kivy/requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3/' buildozer.spec
           sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
           sed -i 's/#android.permissions = INTERNET/android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE/' buildozer.spec
           
-          # 3. APK Cooking shuru (Auto-accept licenses)
+          # Final APK cooking (All licenses accepted)
           yes | buildozer -v android debug
 
       - name: Upload APK Result
         uses: actions/upload-artifact@v4
         with:
-          name: YUGRAAL-Install-Me
+          name: YUGRAAL-Final-App
           path: bin/*.apk
-                - name: Auto-Generate Spec and Build APK
-        run: |
-          export PATH=$PATH:/home/runner/.local/bin
-          
-          # Agar pehle se spec file hai, toh use delete karo taaki nayi ban sake
-          rm -f buildozer.spec 
-          
-          buildozer init
-          sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
-          sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
-          sed -i 's/requirements = python3,kivy/requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3/' buildozer.spec
-          sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
-          sed -i 's/#android.permissions = INTERNET/android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE/' buildozer.spec
-          
-          yes | buildozer -v android debug
-
