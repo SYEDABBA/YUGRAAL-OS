@@ -1,4 +1,4 @@
-name: YUGRAAL FINAL VICTORY
+name: YUGRAAL VICTORY PUSH
 on: [push, workflow_dispatch]
 
 jobs:
@@ -12,35 +12,31 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install System Tools
+      - name: Install Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld openjdk-17-jdk autoconf automake libtool
           pip install --upgrade pip buildozer cython
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Build APK (The Final Stand)
+      - name: APK Build
         run: |
           export PATH=$PATH:/home/runner/.local/bin
-          # 1. Purani files saaf karo
+          # Conflict khatam karne ke liye purani spec mitao
           rm -f buildozer.spec
-          
-          # 2. Fresh initialization
           buildozer init
           
-          # 3. Precise configuration
+          # Settings set karo
           sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
           sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
           sed -i 's/requirements = python3,kivy/requirements = python3,kivy,groq,requests,certifi,chardet,idna,urllib3/' buildozer.spec
           sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
-          sed -i 's/#android.permissions = INTERNET/android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE/' buildozer.spec
           
-          # 4. Clean and Build (Broken Pipe fix)
-          buildozer android clean
+          # Seedha build, no cleaning!
           yes | buildozer -v android debug
 
-      - name: Upload YUGRAAL APK
+      - name: Upload Final APK
         uses: actions/upload-artifact@v4
         with:
-          name: YUGRAAL-App
+          name: YUGRAAL-Final
           path: bin/*.apk
