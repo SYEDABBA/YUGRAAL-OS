@@ -1,23 +1,21 @@
-name: YUGRAAL FINAL VICTORY
+name: YUGRAAL FINAL STRIKE
 on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PYTHONUNBUFFERED: "1"
     steps:
       - uses: actions/checkout@v4
 
-      - name: Free Disk Space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      - name: Free Space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
       - name: Install Tools
         run: |
@@ -26,23 +24,22 @@ jobs:
           pip install --upgrade pip buildozer cython==0.29.33
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Build APK (Safety Mode)
+      - name: Build APK (The Final Victory)
         run: |
           export PATH=$PATH:/home/runner/.local/bin
           rm -f buildozer.spec
           buildozer init
           
-          # Indentation fix for requirements
+          # Stable configuration
           sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
           sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
           sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,groq/' buildozer.spec
           sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
           
-          # Ye line 'Broken Pipe' ko rokti hai (Memory limit fix)
-          export BUILDOZER_ALLOW_ORG_NAME_STARTING_WITH_DIGIT=1
-          yes | buildozer -v android debug
+          # Force log updates to prevent 'Broken Pipe'
+          yes | buildozer -v android debug | stdbuf -oL tr '\r' '\n'
 
-      - name: Upload Final APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: YUGRAAL-Final
