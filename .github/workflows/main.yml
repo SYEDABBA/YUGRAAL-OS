@@ -50,3 +50,9 @@ jobs:
           name: YUGRAAL-Final-App
           # Ye path bilkul yahi hona chahiye:
           path: ./.buildozer/android/platform/build-android-arm64-v8a/dists/yugraal/bin/*.apk
+      - name: Upload Final APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: YUGRAAL-Final-App
+          # Ye path har galti ko sudhaar dega:
+          path: bin/*.apk
