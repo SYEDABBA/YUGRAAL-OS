@@ -10,7 +10,7 @@ jobs:
       - name: Increase Memory (Anti-Broken Pipe)
         run: |
           sudo swapoff -a
-          sudo dd if=/dev/zero of=/swapfile bs=1G count=4
+          sudo dd if=/dev/zero of=/swapfile bs=4G count=4
           sudo chmod 600 /swapfile
           sudo mkswap /swapfile
           sudo swapon /swapfile
@@ -27,32 +27,28 @@ jobs:
           pip install --upgrade pip buildozer cython==0.29.33
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Build APK (Force Mode)
+      - name: Build APK (Victory Mode)
         run: |
           export PATH=$PATH:/home/runner/.local/bin
           rm -f buildozer.spec
           buildozer init
           
-          # Stable configuration
+          # Stable config
           sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
           sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
           sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,groq/' buildozer.spec
           sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
           
-          # Force logs to stay alive
-          yes | buildozer -v android debug | stdbuf -oL tr '\r' '\n'
+          # Build shuru
+          yes | buildozer -v android debug
+          
+          # APK ko dhoond kar nikalne ki Ninja Technique
+          mkdir -p final_apk
+          find . -name "*.apk" -exec cp {} ./final_apk/ \;
 
-      - name: Upload Final APK
+      - name: Upload YUGRAAL APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: YUGRAAL-Final
-          path: bin/*.apk
-      - name: Upload Final APK
-        uses: actions/upload-artifact@v4
-        with:
           name: YUGRAAL-Final-App
-          # Ye command har jagah search karegi
-          path: "**/*.apk"
-          # Agar file na mile toh build fail na ho
-          if-no-files-found: warn
+          path: final_apk/*.apk
