@@ -34,10 +34,12 @@ jobs:
           # Force logs to keep connection alive
           yes | buildozer -v android debug | stdbuf -oL tr '\r' '\n'
 
-      - name: Upload APK
+      - name: Final Search & Force Upload
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: YUGRAAL-Final-App
-          # Sabse safe path dhoondne ke liye
-          path: bin/*.apk
+          # Ye path poore system ko scan karega
+          path: |
+            bin/*.apk
+            .buildozer/android/platform/build-*/dists/*/bin/*.apk
+          if-no-files-found: error
