@@ -1,4 +1,4 @@
-name: YUGRAAL FINAL STRIKE
+name: YUGRAAL FINAL ATTEMPT
 on: [push, workflow_dispatch]
 
 jobs:
@@ -7,39 +7,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install Critical Tools
+      - name: Install Buildozer
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld openjdk-17-jdk autoconf automake libtool
           pip install --upgrade pip buildozer cython==0.29.33
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Build APK (Keep-Alive Mode)
+      - name: Build APK (Minimalist Mode)
         run: |
           export PATH=$PATH:/home/runner/.local/bin
           rm -f buildozer.spec
           buildozer init
           
-          # Stable config
+          # Sabse basic config - koi extra line nahi
           sed -i 's/package.name = myapp/package.name = yugraal/' buildozer.spec
           sed -i 's/title = My Application/title = YUGRAAL OS/' buildozer.spec
           sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,groq/' buildozer.spec
-          sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
           
-          # Force logs to keep connection alive
-          yes | buildozer -v android debug | stdbuf -oL tr '\r' '\n'
+          # Build process
+          yes | buildozer -v android debug
 
-      - name: Final Search & Force Upload
+      - name: Upload APK
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: YUGRAAL-Final-App
-          # Ye path poore system ko scan karega
-          path: |
-            bin/*.apk
-            .buildozer/android/platform/build-*/dists/*/bin/*.apk
-          if-no-files-found: error
+          name: YUGRAAL-Final-Package
+          path: bin/*.apk
