@@ -1,4 +1,4 @@
-name: YUGRAAL ULTIMATE SUCCESS
+name: YUGRAAL FINAL STRIKE
 on: [push, workflow_dispatch]
 
 jobs:
@@ -12,14 +12,14 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Tools
+      - name: Install Critical Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev python3-dev libssl-dev zlib1g-dev lld openjdk-17-jdk autoconf automake libtool
           pip install --upgrade pip buildozer cython==0.29.33
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Build APK (Force Output)
+      - name: Build APK (Keep-Alive Mode)
         run: |
           export PATH=$PATH:/home/runner/.local/bin
           rm -f buildozer.spec
@@ -31,16 +31,13 @@ jobs:
           sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,groq/' buildozer.spec
           sed -i 's/#android.archs = armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
           
-          # Force buildozer to put APK in the main folder
-          yes | buildozer -v android debug
-          
-          # Manual search and move (Ye fail nahi hoga!)
-          mkdir -p final_delivery
-          find . -name "*.apk" -exec cp {} ./final_delivery/ \;
+          # Force logs to keep connection alive
+          yes | buildozer -v android debug | stdbuf -oL tr '\r' '\n'
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: YUGRAAL-Final-App
-          path: final_delivery/*.apk
+          # Sabse safe path dhoondne ke liye
+          path: bin/*.apk
